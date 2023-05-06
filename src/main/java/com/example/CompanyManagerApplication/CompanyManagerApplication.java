@@ -10,7 +10,6 @@ public class CompanyManagerApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(CompanyManagerApplication.class, args);
 	}
-
 	@Bean
 	public ModelMapper modelMapper(){
 		return new ModelMapper();

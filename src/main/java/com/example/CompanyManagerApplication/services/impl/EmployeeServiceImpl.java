@@ -1,10 +1,12 @@
 package com.example.CompanyManagerApplication.services.impl;
 
 import com.example.CompanyManagerApplication.dto.EmployeeDTO;
+import com.example.CompanyManagerApplication.dto.ProjectDTO;
 import com.example.CompanyManagerApplication.models.Employee;
+import com.example.CompanyManagerApplication.models.Project;
 import com.example.CompanyManagerApplication.repositories.EmployeeRepository;
 import com.example.CompanyManagerApplication.services.EntityToDtoConverterService;
-import com.example.CompanyManagerApplication.services.ServiceInterfaceDTO;
+import com.example.CompanyManagerApplication.services.ServiceInterface;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,7 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class EmployeeServiceImpl implements ServiceInterfaceDTO<EmployeeDTO> {
+public class EmployeeServiceImpl implements ServiceInterface<EmployeeDTO> {
     private final EmployeeRepository employeeRepository;
     private final EntityToDtoConverterService entityToDtoConverterService;
 
@@ -68,6 +70,19 @@ public class EmployeeServiceImpl implements ServiceInterfaceDTO<EmployeeDTO> {
             return entityToDtoConverterService.convertToEmployeeDTO(employee);
         } else {
             throw new EntityNotFoundException("Employee not found with id: " + id);
+        }
+    }
+
+    public List<ProjectDTO> getAllProjectsForEmployee(Long employeeId) {
+
+        Optional<Employee> optionalEmployee = employeeRepository.findById(employeeId);
+        if (optionalEmployee.isPresent()) {
+            Employee employee = optionalEmployee.get();
+            List<Project> projectList = employee.getProjects();
+
+            return (entityToDtoConverterService.convertToProjectDTOList(projectList));
+        } else {
+            throw new EntityNotFoundException("Employee not found with id: " + employeeId);
         }
     }
 
