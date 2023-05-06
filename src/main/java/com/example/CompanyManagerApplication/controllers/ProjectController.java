@@ -2,7 +2,9 @@ package com.example.CompanyManagerApplication.controllers;
 
 import com.example.CompanyManagerApplication.dto.EmployeeDTO;
 import com.example.CompanyManagerApplication.dto.ProjectDTO;
+import com.example.CompanyManagerApplication.services.ProjectEmployeeService;
 import com.example.CompanyManagerApplication.services.ServiceInterface;
+import com.example.CompanyManagerApplication.services.impl.EmployeeServiceImpl;
 import com.example.CompanyManagerApplication.services.impl.ProjectServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -17,12 +19,17 @@ import java.util.List;
 public class ProjectController {
     private final ServiceInterface serviceInterface;
     private final ProjectServiceImpl projectService;
+    private final EmployeeServiceImpl employeeService;
+
+    private final ProjectEmployeeService projectEmployeeService;
 
     @Autowired
     public ProjectController(@Qualifier("projectServiceImpl") ServiceInterface serviceInterface,
-                             ProjectServiceImpl projectService) {
+                             ProjectServiceImpl projectService, EmployeeServiceImpl employeeService, ProjectEmployeeService projectEmployeeService) {
         this.serviceInterface = serviceInterface;
         this.projectService = projectService;
+        this.employeeService = employeeService;
+        this.projectEmployeeService = projectEmployeeService;
     }
 
     @PostMapping("/create")
@@ -57,5 +64,18 @@ public class ProjectController {
 
         List<EmployeeDTO> employeeDTOList = projectService.getAllEmployeesForProject(projectId);
         return new ResponseEntity<>(employeeDTOList, HttpStatus.OK);
+    }
+
+    @GetMapping("/{projectId}/available-employees")
+    public List<EmployeeDTO> getAvailableEmployeesForProject(@PathVariable Long projectId) {
+
+        return projectService.getAvailableEmployee(projectId);
+    }
+
+    @PostMapping("/{employeeId}/add/{projectId}")
+    public HttpStatus addProjectToEmployee(@PathVariable Long employeeId, @PathVariable Long projectId) {
+
+        projectEmployeeService.addEntityToAssociation(employeeId, projectId);
+        return HttpStatus.OK;
     }
 }

@@ -4,6 +4,7 @@ import com.example.CompanyManagerApplication.dto.EmployeeDTO;
 import com.example.CompanyManagerApplication.dto.ProjectDTO;
 import com.example.CompanyManagerApplication.models.Employee;
 import com.example.CompanyManagerApplication.models.Project;
+import com.example.CompanyManagerApplication.repositories.EmployeeRepository;
 import com.example.CompanyManagerApplication.repositories.ProjectRepository;
 import com.example.CompanyManagerApplication.services.EntityToDtoConverterService;
 import com.example.CompanyManagerApplication.services.ServiceInterface;
@@ -17,12 +18,14 @@ import java.util.Optional;
 @Service
 public class ProjectServiceImpl implements ServiceInterface<ProjectDTO> {
     private final ProjectRepository projectRepository;
+    private final EmployeeRepository employeeRepository;
     private final EntityToDtoConverterService entityToDtoConverterService;
 
     @Autowired
     public ProjectServiceImpl(ProjectRepository projectRepository,
-                              EntityToDtoConverterService entityToDtoConverterService) {
+                              EmployeeRepository employeeRepository, EntityToDtoConverterService entityToDtoConverterService) {
         this.projectRepository = projectRepository;
+        this.employeeRepository = employeeRepository;
         this.entityToDtoConverterService = entityToDtoConverterService;
     }
 
@@ -77,4 +80,16 @@ public class ProjectServiceImpl implements ServiceInterface<ProjectDTO> {
         }
     }
 
+    public List<EmployeeDTO> getAvailableEmployee(Long projectId) {
+
+        Optional<Project> optionalProject = projectRepository.findById(projectId);
+        if (optionalProject.isPresent()) {
+            List<Employee> availableEmployeeList = employeeRepository.findByProjectsNotContaining(
+                    optionalProject.get());
+
+            return entityToDtoConverterService.convertToEmployeeDTOList(availableEmployeeList);
+        } else {
+            throw new EntityNotFoundException("Employee not found with id: " + projectId);
+        }
+    }
 }

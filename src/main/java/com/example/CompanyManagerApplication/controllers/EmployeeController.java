@@ -2,6 +2,7 @@ package com.example.CompanyManagerApplication.controllers;
 
 import com.example.CompanyManagerApplication.dto.EmployeeDTO;
 import com.example.CompanyManagerApplication.dto.ProjectDTO;
+import com.example.CompanyManagerApplication.services.ProjectEmployeeService;
 import com.example.CompanyManagerApplication.services.ServiceInterface;
 import com.example.CompanyManagerApplication.services.impl.EmployeeServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,12 +18,14 @@ import java.util.List;
 public class EmployeeController {
     private final ServiceInterface serviceInterface;
     private final EmployeeServiceImpl employeeService;
+    private final ProjectEmployeeService projectEmployeeService;
 
     @Autowired
     public EmployeeController(@Qualifier("employeeServiceImpl") ServiceInterface serviceInterface,
-                              EmployeeServiceImpl employeeService) {
+                              EmployeeServiceImpl employeeService, ProjectEmployeeService projectEmployeeService) {
         this.serviceInterface = serviceInterface;
         this.employeeService = employeeService;
+        this.projectEmployeeService = projectEmployeeService;
     }
 
     @PostMapping("/create")
@@ -57,5 +60,18 @@ public class EmployeeController {
 
         List<ProjectDTO> projectDTOList = employeeService.getAllProjectsForEmployee(employeeId);
         return new ResponseEntity<>(projectDTOList, HttpStatus.OK);
+    }
+
+    @GetMapping("/{employeeId}/available-projects")
+    public List<ProjectDTO> getAvailableProjectsForEmployee(@PathVariable Long employeeId) {
+
+        return employeeService.getAvailableProjects(employeeId);
+    }
+
+    @PostMapping("/{employeeId}/add/{projectId}")
+    public HttpStatus addProjectToEmployee(@PathVariable Long employeeId, @PathVariable Long projectId) {
+
+        projectEmployeeService.addEntityToAssociation(employeeId, projectId);
+        return HttpStatus.OK;
     }
 }
