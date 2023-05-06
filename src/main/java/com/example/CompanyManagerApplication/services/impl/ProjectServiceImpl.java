@@ -54,12 +54,7 @@ public class ProjectServiceImpl implements ServiceInterface<ProjectDTO> {
         Optional<Project> optionalProject = projectRepository.findById(id);
         if (optionalProject.isPresent()) {
             Project project = optionalProject.get();
-            if (projectDTO.getName() != null) {
-                project.setName(projectDTO.getName());
-            }
-            if (projectDTO.getCustomerName() != null) {
-                project.setCustomerName(projectDTO.getCustomerName());
-            }
+            updateProject(project, projectDTO);
             projectRepository.save(project);
             return entityToDtoConverterService.convertToProjectDTO(project);
         } else {
@@ -90,6 +85,15 @@ public class ProjectServiceImpl implements ServiceInterface<ProjectDTO> {
             return entityToDtoConverterService.convertToEmployeeDTOList(availableEmployeeList);
         } else {
             throw new EntityNotFoundException("Employee not found with id: " + projectId);
+        }
+    }
+
+    private void updateProject(Project project, ProjectDTO projectDTO) {
+        if (projectDTO.getName() != null) {
+            project.setName(projectDTO.getName());
+        }
+        if (projectDTO.getCustomerName() != null) {
+            project.setCustomerName(projectDTO.getCustomerName());
         }
     }
 }

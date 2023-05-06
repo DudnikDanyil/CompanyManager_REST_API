@@ -55,21 +55,7 @@ public class EmployeeServiceImpl implements ServiceInterface<EmployeeDTO> {
         Optional<Employee> optionalEmployee = employeeRepository.findById(id);
         if (optionalEmployee.isPresent()) {
             Employee employee = optionalEmployee.get();
-            if (employeeDTO.getFirstName() != null) {
-                employee.setFirstName(employeeDTO.getFirstName());
-            }
-            if (employeeDTO.getLastName() != null) {
-                employee.setLastName(employeeDTO.getLastName());
-            }
-            if (employeeDTO.getLevel() != null) {
-                employee.setLevel(employeeDTO.getLevel());
-            }
-            if (employeeDTO.getPosition() != null) {
-                employee.setPosition(employeeDTO.getPosition());
-            }
-            if (employeeDTO.getType() != null) {
-                employee.setType(employeeDTO.getType());
-            }
+            updateEmployee(employee, employeeDTO);
             employeeRepository.save(employee);
             return entityToDtoConverterService.convertToEmployeeDTO(employee);
         } else {
@@ -101,6 +87,24 @@ public class EmployeeServiceImpl implements ServiceInterface<EmployeeDTO> {
             return entityToDtoConverterService.convertToProjectDTOList(availableProjectList);
         } else {
             throw new EntityNotFoundException("Employee not found with id: " + employeeId);
+        }
+    }
+
+    private void updateEmployee(Employee employee, EmployeeDTO employeeDTO) {
+        if (employeeDTO.getFirstName() != null) {
+            employee.setFirstName(employeeDTO.getFirstName());
+        }
+        if (employeeDTO.getLastName() != null) {
+            employee.setLastName(employeeDTO.getLastName());
+        }
+        if (employeeDTO.getLevel() != null) {
+            employee.setLevel(employeeDTO.getLevel());
+        }
+        if (employeeDTO.getPosition() != null) {
+            employee.setPosition(employeeDTO.getPosition());
+        }
+        if (employeeDTO.getType() != null) {
+            employee.setType(employeeDTO.getType());
         }
     }
 }
