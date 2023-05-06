@@ -78,4 +78,11 @@ public class ProjectController {
         projectEmployeeService.addEntityToAssociation(employeeId, projectId);
         return HttpStatus.OK;
     }
+
+    @DeleteMapping("/{employeeId}/remove/{projectId}")
+    public HttpStatus removeEmployeeFromProject(@PathVariable Long employeeId, @PathVariable Long projectId) {
+
+        projectEmployeeService.removeEntityFromAssociation(employeeId, projectId);
+        return HttpStatus.OK;
+    }
 }
