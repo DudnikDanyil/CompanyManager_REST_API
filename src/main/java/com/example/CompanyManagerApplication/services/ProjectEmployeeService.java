@@ -6,6 +6,7 @@ import com.example.CompanyManagerApplication.repositories.EmployeeRepository;
 import com.example.CompanyManagerApplication.repositories.ProjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionSystemException;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
@@ -23,6 +24,7 @@ public class ProjectEmployeeService {
         this.projectRepository = projectRepository;
     }
 
+    @Transactional
     public void addEntityToAssociation(Long employeeId, Long projectId) {
 
         Optional<Employee> optionalEmployee = employeeRepository.findById(employeeId);
@@ -42,17 +44,24 @@ public class ProjectEmployeeService {
         } else {
             throw new EntityNotFoundException("Employee not found with id: " + employeeId);
         }
+
     }
 
     @Transactional
     public void removeEntityFromAssociation(Long employeeId, Long projectId) {
-        Employee employee = employeeRepository.findById(employeeId).orElseThrow();
-        Project project = projectRepository.findById(projectId).orElseThrow();
 
-        employee.getProjects().remove(project);
-        project.getEmployees().remove(employee);
+        try {
+            Employee employee = employeeRepository.findById(employeeId).orElseThrow();
+            Project project = projectRepository.findById(projectId).orElseThrow();
 
-        employeeRepository.save(employee);
-        projectRepository.save(project);
+            employee.getProjects().remove(project);
+            project.getEmployees().remove(employee);
+
+            employeeRepository.save(employee);
+            projectRepository.save(project);
+        } catch (TransactionSystemException ex) {
+            throw new TransactionSystemException("An error occurred while removing the entity from the association.", ex);
+        }
+
     }
 }

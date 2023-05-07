@@ -2,6 +2,7 @@ package com.example.CompanyManagerApplication.services.impl;
 
 import com.example.CompanyManagerApplication.dto.EmployeeDTO;
 import com.example.CompanyManagerApplication.dto.ProjectDTO;
+import com.example.CompanyManagerApplication.exceptions.EntityAlreadyExistsException;
 import com.example.CompanyManagerApplication.models.Employee;
 import com.example.CompanyManagerApplication.models.Project;
 import com.example.CompanyManagerApplication.repositories.EmployeeRepository;
@@ -9,7 +10,10 @@ import com.example.CompanyManagerApplication.repositories.ProjectRepository;
 import com.example.CompanyManagerApplication.services.EntityToDtoConverterService;
 import com.example.CompanyManagerApplication.services.ServiceInterface;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
 import java.util.List;
@@ -30,16 +34,26 @@ public class ProjectServiceImpl implements ServiceInterface<ProjectDTO> {
     }
 
     @Override
+    @Transactional
     public ProjectDTO save(ProjectDTO projectDTO) {
 
-        Project savedProject = projectRepository.save(entityToDtoConverterService.convertToProject(projectDTO));
-        return entityToDtoConverterService.convertToProjectDTO(savedProject);
+        try {
+            Project savedProject = projectRepository.save(entityToDtoConverterService.convertToProject(projectDTO));
+            return entityToDtoConverterService.convertToProjectDTO(savedProject);
+        } catch (DataIntegrityViolationException ex) {
+            throw new EntityAlreadyExistsException("Project with the same ID or email already exists.");
+        }
     }
 
     @Override
+    @Transactional
     public void delete(Long id) {
 
-        projectRepository.deleteById(id);
+        try {
+            projectRepository.deleteById(id);
+        } catch (EmptyResultDataAccessException e) {
+            throw new EntityNotFoundException("Project not found with id: " + id);
+        }
     }
 
     @Override
@@ -49,6 +63,7 @@ public class ProjectServiceImpl implements ServiceInterface<ProjectDTO> {
     }
 
     @Override
+    @Transactional
     public ProjectDTO update(Long id, ProjectDTO projectDTO) {
 
         Optional<Project> optionalProject = projectRepository.findById(id);
@@ -89,6 +104,7 @@ public class ProjectServiceImpl implements ServiceInterface<ProjectDTO> {
     }
 
     private void updateProject(Project project, ProjectDTO projectDTO) {
+
         if (projectDTO.getName() != null) {
             project.setName(projectDTO.getName());
         }

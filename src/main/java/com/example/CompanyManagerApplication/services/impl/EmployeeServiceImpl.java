@@ -2,6 +2,7 @@ package com.example.CompanyManagerApplication.services.impl;
 
 import com.example.CompanyManagerApplication.dto.EmployeeDTO;
 import com.example.CompanyManagerApplication.dto.ProjectDTO;
+import com.example.CompanyManagerApplication.exceptions.EntityAlreadyExistsException;
 import com.example.CompanyManagerApplication.models.Employee;
 import com.example.CompanyManagerApplication.models.Project;
 import com.example.CompanyManagerApplication.repositories.EmployeeRepository;
@@ -9,7 +10,10 @@ import com.example.CompanyManagerApplication.repositories.ProjectRepository;
 import com.example.CompanyManagerApplication.services.EntityToDtoConverterService;
 import com.example.CompanyManagerApplication.services.ServiceInterface;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityNotFoundException;
 import java.util.List;
@@ -31,16 +35,26 @@ public class EmployeeServiceImpl implements ServiceInterface<EmployeeDTO> {
     }
 
     @Override
+    @Transactional
     public EmployeeDTO save(EmployeeDTO employeeDTO) {
 
-        Employee savedEmployee = employeeRepository.save(entityToDtoConverterService.convertToEmployee(employeeDTO));
-        return entityToDtoConverterService.convertToEmployeeDTO(savedEmployee);
+        try {
+            Employee savedEmployee = employeeRepository.save(entityToDtoConverterService.convertToEmployee(employeeDTO));
+            return entityToDtoConverterService.convertToEmployeeDTO(savedEmployee);
+        } catch (DataIntegrityViolationException ex) {
+            throw new EntityAlreadyExistsException("Employee with the same ID or email already exists.");
+        }
     }
 
     @Override
+    @Transactional
     public void delete(Long id) {
 
-        employeeRepository.deleteById(id);
+        try {
+            employeeRepository.deleteById(id);
+        } catch (EmptyResultDataAccessException e) {
+            throw new EntityNotFoundException("Employee not found with id: " + id);
+        }
     }
 
     @Override
@@ -50,6 +64,7 @@ public class EmployeeServiceImpl implements ServiceInterface<EmployeeDTO> {
     }
 
     @Override
+    @Transactional
     public EmployeeDTO update(Long id, EmployeeDTO employeeDTO) {
 
         Optional<Employee> optionalEmployee = employeeRepository.findById(id);
@@ -91,6 +106,7 @@ public class EmployeeServiceImpl implements ServiceInterface<EmployeeDTO> {
     }
 
     private void updateEmployee(Employee employee, EmployeeDTO employeeDTO) {
+
         if (employeeDTO.getFirstName() != null) {
             employee.setFirstName(employeeDTO.getFirstName());
         }
